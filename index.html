@@ -1311,6 +1311,7 @@
     .nav-links::-webkit-scrollbar { display: none; }
     .nav-links a { font-size: 0.72rem; }
     .nav-cta { padding: 0.45rem 1rem; }
+    .section-title { font-size: clamp(1.8rem, 7vw, 2.8rem); }
     .hero {
       min-height: 100svh;
       padding: 10.4rem 5% 4.5rem;
@@ -1322,6 +1323,9 @@
     .media-lead-card { min-height: 360px; }
     .services-grid { grid-template-columns: 1fr; }
     .service-card.featured { grid-column: 1; grid-template-columns: 1fr; gap: 1.5rem; }
+    .service-number { font-size: 3.1rem; right: 1rem; }
+    .stat-grid { gap: 1rem; }
+    .hours-row { font-size: 0.8rem; }
     .reviews-carousel { grid-template-columns: 1fr; }
     .contact-grid { grid-template-columns: 1fr; }
     .baroque-map-embed { height: 360px; }
@@ -1355,16 +1359,35 @@
   }
 
   @media (max-width: 640px) {
+    nav { padding: 0.78rem 0.8rem; }
+    .nav-links { gap: 0.75rem; }
+    .nav-links a { font-size: 0.68rem; letter-spacing: 0.06em; }
+    .nav-cta { padding: 0.42rem 0.82rem; }
     .hero {
       min-height: 100svh;
       padding: 10rem 1rem 4rem;
     }
+    .hero-eyebrow { font-size: 0.62rem; letter-spacing: 0.24em; }
+    .hero-desc {
+      max-width: 100%;
+      margin-bottom: 2rem;
+      font-size: 0.95rem;
+      line-height: 1.65;
+    }
     .section { padding: 5rem 1rem; }
     .contact-section { padding: 4.8rem 1rem; }
     .services-header { margin-bottom: 2.2rem; }
+    .feature-item { padding: 1rem; }
     .service-card { padding: 1.5rem 1.2rem; }
+    .service-number { font-size: 2.8rem; }
     .service-name { font-size: 1.2rem; }
+    .about-gallery,
+    .stat-grid { grid-template-columns: 1fr; gap: 1rem; }
+    .hours-card { padding: 1.1rem; }
     .review-card { padding: 1.3rem; }
+    .feature-item:hover,
+    .service-card:hover,
+    .review-card:hover { transform: none; }
     .contact-link {
       width: 100%;
       justify-content: center;
@@ -1396,9 +1419,15 @@
       left: 0.55rem;
       bottom: calc(11.4rem + env(safe-area-inset-bottom));
     }
+    .footer-links { gap: 0.9rem 1rem; }
+    .site-credit { margin-bottom: calc(4.4rem + env(safe-area-inset-bottom)); }
   }
 
   @media (max-width: 430px) {
+    nav { padding: 0.72rem 0.65rem; }
+    .nav-links { gap: 0.55rem; }
+    .nav-links a { font-size: 0.64rem; }
+    .nav-cta { font-size: 0.64rem !important; }
     .hero-title { font-size: clamp(2.6rem, 14vw, 3.8rem); }
     .hero-subtitle-italic { font-size: 1rem; }
     .hero-desc { font-size: 0.95rem; line-height: 1.6; }
@@ -1409,8 +1438,13 @@
       justify-content: center;
       width: 100%;
     }
+    .stat-number { font-size: 2.2rem; }
     .baroque-map-embed { height: 250px; }
-    .site-credit { font-size: 0.6rem; letter-spacing: 0.08em; }
+    .site-credit {
+      font-size: 0.56rem;
+      letter-spacing: 0.07em;
+      margin-bottom: calc(4.2rem + env(safe-area-inset-bottom));
+    }
   }
 
   @media (max-height: 740px) {
@@ -2195,7 +2229,7 @@
   </ul>
   <span class="footer-copy">© 2026 Baroque Disco Pub. Todos los derechos reservados.</span>
 </footer>
-<p class="site-credit">Desarrollada por <a href="Https://luckybase.es" target="_blank">LuckyBase</p>
+<p class="site-credit">Desarrollada por <a href="https://luckybase.es" target="_blank" rel="noopener noreferrer">LuckyBase</a></p>
 
 <script>
   function googleTranslateElementInit() {
