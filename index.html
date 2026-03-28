@@ -1,0 +1,2278 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google" content="notranslate">
+<title>Baroque Disco Pub — Gijón</title>
+<link rel="icon" type="image/png" href="baorque3dd.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<style>
+  :root {
+    --purple-deep: #1a0a2e;
+    --purple-mid: #3b1f6e;
+    --purple-vivid: #7c3aed;
+    --purple-bright: #a855f7;
+    --purple-glow: #c084fc;
+    --purple-pale: #e9d5ff;
+    --gold: #f5c842;
+    --gold-pale: #fde68a;
+    --white: #faf5ff;
+    --text-muted: rgba(250,245,255,0.55);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--purple-deep);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.5;
+  }
+
+  /* ── NAVBAR ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 1.5rem 5%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    background: rgba(26,10,46,0.6);
+    border-bottom: 1px solid rgba(168,85,247,0.12);
+    transition: background 0.4s;
+  }
+  .nav-logo {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .nav-logo img {
+    display: block;
+    width: clamp(82px, 10vw, 130px);
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.32));
+  }
+  .nav-links { display: flex; gap: 2.2rem; list-style: none; }
+  .nav-links a {
+    text-decoration: none;
+    font-size: 0.82rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    transition: color 0.3s;
+  }
+  .nav-links a:hover { color: var(--white); }
+  .nav-cta {
+    background: linear-gradient(135deg, var(--purple-vivid), var(--purple-bright));
+    color: #fff !important;
+    padding: 0.5rem 1.3rem;
+    border-radius: 50px;
+    font-size: 0.78rem !important;
+    letter-spacing: 0.1em;
+    transition: opacity 0.3s !important;
+  }
+  .nav-cta:hover { opacity: 0.85; color: #fff !important; }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+    padding: 8rem 5% 5rem;
+    overflow: hidden;
+  }
+  .hero > * {
+    position: relative;
+    z-index: 2;
+  }
+  .party-lights {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+  }
+  .party-lights::before {
+    content: '';
+    position: absolute;
+    inset: 12% 24% auto;
+    height: 12rem;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.12) 18%, rgba(168,85,247,0.08) 38%, transparent 72%);
+    filter: blur(12px);
+    animation: discoPulse 4.5s ease-in-out infinite;
+  }
+  .party-lights::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 50% 28%, rgba(245,200,66,0.12) 0%, transparent 22%),
+      radial-gradient(circle at 20% 18%, rgba(236,72,153,0.08) 0%, transparent 28%),
+      radial-gradient(circle at 82% 22%, rgba(59,130,246,0.1) 0%, transparent 24%);
+    mix-blend-mode: screen;
+    animation: ambientShift 9s ease-in-out infinite alternate;
+  }
+  .light-beam {
+    position: absolute;
+    top: -18%;
+    width: 32vw;
+    height: 130%;
+    opacity: 0.42;
+    filter: blur(6px);
+    transform-origin: top center;
+    mix-blend-mode: screen;
+  }
+  .beam-left {
+    left: -4%;
+    background: linear-gradient(to bottom, rgba(34,211,238,0.38) 0%, rgba(34,211,238,0.08) 32%, transparent 72%);
+    clip-path: polygon(48% 0%, 60% 0%, 100% 100%, 8% 100%);
+    animation: beamSweepLeft 7s ease-in-out infinite;
+  }
+  .beam-center {
+    left: 34%;
+    background: linear-gradient(to bottom, rgba(245,200,66,0.34) 0%, rgba(245,200,66,0.1) 28%, transparent 70%);
+    clip-path: polygon(44% 0%, 56% 0%, 82% 100%, 18% 100%);
+    animation: beamSweepCenter 5.8s ease-in-out infinite;
+  }
+  .beam-right {
+    right: -6%;
+    background: linear-gradient(to bottom, rgba(236,72,153,0.34) 0%, rgba(236,72,153,0.08) 34%, transparent 72%);
+    clip-path: polygon(40% 0%, 52% 0%, 94% 100%, 0% 100%);
+    animation: beamSweepRight 6.8s ease-in-out infinite;
+  }
+  .strobe-dot {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    filter: blur(1px);
+    opacity: 0;
+    box-shadow: 0 0 22px currentColor;
+    animation: strobeFlash 3.2s linear infinite;
+  }
+  .strobe-1 { top: 22%; left: 18%; color: #22d3ee; animation-delay: 0.2s; }
+  .strobe-2 { top: 18%; left: 48%; color: #f5c842; animation-delay: 1.4s; }
+  .strobe-3 { top: 30%; right: 16%; color: #ec4899; animation-delay: 0.8s; }
+  .strobe-4 { bottom: 26%; left: 28%; color: #a855f7; animation-delay: 2.1s; }
+  .strobe-5 { bottom: 20%; right: 24%; color: #60a5fa; animation-delay: 2.7s; }
+
+  /* Orb backgrounds */
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+  }
+  .orb-1 {
+    width: 60vw; height: 60vw;
+    background: radial-gradient(circle, rgba(124,58,237,0.35) 0%, transparent 70%);
+    top: -15%; left: -10%;
+    animation: float1 12s ease-in-out infinite;
+  }
+  .orb-2 {
+    width: 40vw; height: 40vw;
+    background: radial-gradient(circle, rgba(168,85,247,0.25) 0%, transparent 70%);
+    bottom: 5%; right: -5%;
+    animation: float2 16s ease-in-out infinite;
+  }
+  .orb-3 {
+    width: 30vw; height: 30vw;
+    background: radial-gradient(circle, rgba(245,200,66,0.12) 0%, transparent 70%);
+    top: 40%; left: 60%;
+    animation: float3 10s ease-in-out infinite;
+  }
+
+  @keyframes float1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(4%,3%)} }
+  @keyframes float2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-3%,-4%)} }
+  @keyframes float3 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(2%,5%)} }
+  @keyframes beamSweepLeft {
+    0%, 100% { transform: rotate(-28deg) translateX(0); opacity: 0.18; }
+    50% { transform: rotate(-10deg) translateX(3vw); opacity: 0.48; }
+  }
+  @keyframes beamSweepCenter {
+    0%, 100% { transform: rotate(-6deg) scaleY(0.96); opacity: 0.18; }
+    50% { transform: rotate(10deg) scaleY(1.03); opacity: 0.54; }
+  }
+  @keyframes beamSweepRight {
+    0%, 100% { transform: rotate(30deg) translateX(0); opacity: 0.16; }
+    50% { transform: rotate(12deg) translateX(-2vw); opacity: 0.44; }
+  }
+  @keyframes strobeFlash {
+    0%, 100% { opacity: 0; transform: scale(0.7); }
+    6%, 11% { opacity: 0.95; transform: scale(1.35); }
+    14%, 55% { opacity: 0; transform: scale(0.85); }
+  }
+  @keyframes discoPulse {
+    0%, 100% { transform: translateY(0) scale(0.96); opacity: 0.6; }
+    50% { transform: translateY(10px) scale(1.05); opacity: 1; }
+  }
+  @keyframes ambientShift {
+    0% { transform: translate3d(-1.5%, 0, 0) scale(1); }
+    100% { transform: translate3d(1.5%, -1%, 0) scale(1.08); }
+  }
+
+  .hero-eyebrow {
+    font-size: 0.72rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--purple-bright);
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeUp 0.9s 0.3s forwards;
+  }
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3.5rem, 9vw, 8rem);
+    font-weight: 900;
+    line-height: 1.04;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--white) 20%, var(--purple-glow) 60%, var(--gold) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    padding-bottom: 0.12em;
+    margin-bottom: 1rem;
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeUp 1s 0.5s forwards;
+  }
+  .hero-subtitle-italic {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: clamp(1.2rem, 3vw, 2rem);
+    color: var(--purple-glow);
+    margin-bottom: 2rem;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeUp 0.9s 0.7s forwards;
+  }
+  .hero-desc {
+    max-width: 560px;
+    font-size: 1.05rem;
+    line-height: 1.75;
+    color: var(--text-muted);
+    margin: 0 auto 3rem;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeUp 0.9s 0.9s forwards;
+  }
+  .hero-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeUp 0.9s 1.1s forwards;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--purple-vivid), var(--purple-bright));
+    color: #fff;
+    padding: 0.9rem 2.2rem;
+    border-radius: 50px;
+    font-size: 0.88rem;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    font-weight: 500;
+    box-shadow: 0 0 30px rgba(124,58,237,0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 50px rgba(124,58,237,0.6); }
+  .btn-ghost {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(168,85,247,0.3);
+    color: var(--purple-pale);
+    padding: 0.9rem 2.2rem;
+    border-radius: 50px;
+    font-size: 0.88rem;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    font-weight: 400;
+    backdrop-filter: blur(10px);
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .btn-ghost:hover { background: rgba(124,58,237,0.15); border-color: var(--purple-bright); }
+
+  .hero-scroll-hint {
+    position: absolute;
+    bottom: 2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    opacity: 0;
+    animation: fadeIn 1s 2s forwards;
+  }
+  .scroll-line {
+    width: 1px;
+    height: 50px;
+    background: linear-gradient(to bottom, var(--purple-bright), transparent);
+    animation: scrollPulse 2s ease-in-out infinite;
+  }
+  .scroll-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  @keyframes scrollPulse { 0%,100%{opacity:0.4;transform:scaleY(1)} 50%{opacity:1;transform:scaleY(1.15)} }
+
+  /* ── ABOUT SECTION ── */
+  .section {
+    padding: 8rem 5%;
+    position: relative;
+  }
+  .section-inner { max-width: 1100px; margin: 0 auto; }
+
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+    align-items: center;
+  }
+  .section-eyebrow {
+    font-size: 0.68rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--purple-bright);
+    margin-bottom: 1.2rem;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 4.5vw, 3.5rem);
+    font-weight: 700;
+    line-height: 1.16;
+    margin-bottom: 1.8rem;
+    background: linear-gradient(135deg, var(--white) 40%, var(--purple-glow));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .section-text {
+    font-size: 1rem;
+    line-height: 1.85;
+    color: var(--text-muted);
+    margin-bottom: 1.4rem;
+  }
+  .about-more-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-top: 1.1rem;
+    padding: 0.95rem 1.25rem;
+    border-radius: 999px;
+    border: 1px solid rgba(168,85,247,0.2);
+    background: rgba(255,255,255,0.04);
+    color: var(--purple-pale);
+    text-decoration: none;
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: background 0.25s ease, border-color 0.25s ease, transform 0.25s ease, color 0.25s ease;
+  }
+  .about-more-link:hover {
+    transform: translateY(-2px);
+    background: rgba(124,58,237,0.18);
+    border-color: rgba(168,85,247,0.42);
+    color: var(--gold);
+  }
+
+  /* Feature pills */
+  .features-row {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    margin-top: 2.5rem;
+  }
+  .feature-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.2rem 1.4rem;
+    background: rgba(124,58,237,0.08);
+    border: 1px solid rgba(168,85,247,0.15);
+    border-radius: 16px;
+    backdrop-filter: blur(8px);
+    transition: background 0.3s, border-color 0.3s, transform 0.3s;
+  }
+  .feature-item:hover {
+    background: rgba(124,58,237,0.15);
+    border-color: rgba(168,85,247,0.35);
+    transform: translateX(6px);
+  }
+  .feature-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--purple-vivid), var(--purple-bright));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .feature-icon svg {
+    width: 18px;
+    height: 18px;
+    stroke: #fff;
+    fill: none;
+    stroke-width: 1.9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .feature-text h4 {
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    color: var(--white);
+  }
+  .feature-text p {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  /* Decorative card side */
+  .about-visual {
+    position: relative;
+  }
+  .visual-card {
+    background: linear-gradient(135deg, rgba(59,31,110,0.7), rgba(26,10,46,0.9));
+    border: 1px solid rgba(168,85,247,0.2);
+    border-radius: 28px;
+    padding: 3rem 2.5rem;
+    backdrop-filter: blur(20px);
+    position: relative;
+    overflow: hidden;
+  }
+  .visual-card::before {
+    content: '';
+    position: absolute;
+    top: -1px; left: -1px; right: -1px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--purple-bright), var(--gold), transparent);
+  }
+  .visual-card-bg {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 70% 20%, rgba(124,58,237,0.2) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .about-gallery {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.9rem;
+    position: relative;
+    margin-bottom: 1.5rem;
+  }
+  .about-gallery-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 18px;
+    border: 1px solid rgba(250,245,255,0.08);
+    aspect-ratio: 0.86;
+    background: rgba(255,255,255,0.03);
+    box-shadow: 0 14px 30px rgba(0,0,0,0.2);
+  }
+  .about-gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.5s ease, filter 0.5s ease;
+    filter: saturate(1.05) contrast(1.04);
+  }
+  .about-gallery-item:hover img {
+    transform: scale(1.04);
+    filter: saturate(1.15) contrast(1.08);
+  }
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    position: relative;
+  }
+  .stat-item {
+    text-align: center;
+    padding: 1.5rem 1rem;
+    background: rgba(255,255,255,0.04);
+    border-radius: 16px;
+    border: 1px solid rgba(168,85,247,0.1);
+  }
+  .stat-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.8rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--purple-glow), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+    margin-bottom: 0.4rem;
+  }
+  .stat-label {
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .hours-card {
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+    background: rgba(255,255,255,0.04);
+    border-radius: 16px;
+    border: 1px solid rgba(168,85,247,0.1);
+    position: relative;
+  }
+  .hours-title {
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--purple-bright);
+    margin-bottom: 1rem;
+  }
+  .hours-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.55rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+  .hours-row strong { color: var(--white); font-weight: 400; }
+  .hours-badge {
+    display: inline-block;
+    background: rgba(245,200,66,0.15);
+    border: 1px solid rgba(245,200,66,0.3);
+    color: var(--gold);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    padding: 0.25rem 0.7rem;
+    border-radius: 50px;
+    margin-top: 0.8rem;
+  }
+  .media-showcase {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 1.2rem;
+    align-items: stretch;
+  }
+  .media-lead,
+  .media-stack video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .media-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 24px;
+    border: 1px solid rgba(168,85,247,0.18);
+    background: rgba(255,255,255,0.03);
+    box-shadow: 0 24px 50px rgba(0,0,0,0.26);
+  }
+  .media-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 0%, rgba(10,4,22,0.08) 60%, rgba(10,4,22,0.42) 100%);
+    pointer-events: none;
+  }
+  .media-lead-card {
+    min-height: 520px;
+  }
+  .media-stack {
+    display: grid;
+    grid-template-rows: repeat(2, 1fr);
+    gap: 1.2rem;
+  }
+  .media-caption {
+    position: absolute;
+    left: 1rem;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 1;
+  }
+  .media-caption strong {
+    display: block;
+    margin-bottom: 0.35rem;
+    color: var(--white);
+    font-size: 0.88rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .media-caption span {
+    color: rgba(250,245,255,0.72);
+    font-size: 0.86rem;
+    line-height: 1.5;
+  }
+
+  /* ── SERVICES ── */
+  .services-section {
+    background: linear-gradient(180deg, transparent, rgba(59,31,110,0.25), transparent);
+  }
+  .services-header {
+    text-align: center;
+    margin-bottom: 4rem;
+  }
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+  .service-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(168,85,247,0.15);
+    border-radius: 24px;
+    padding: 2.5rem;
+    position: relative;
+    overflow: hidden;
+    cursor: default;
+    transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), border-color 0.3s, background 0.3s;
+  }
+  .service-card:hover {
+    transform: translateY(-8px) scale(1.01);
+    border-color: rgba(168,85,247,0.4);
+    background: rgba(124,58,237,0.1);
+  }
+  .service-card.featured {
+    grid-column: span 2;
+    background: linear-gradient(135deg, rgba(59,31,110,0.5), rgba(26,10,46,0.7));
+    border-color: rgba(168,85,247,0.3);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 3rem;
+  }
+  .service-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(168,85,247,0.4), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .service-card:hover::before { opacity: 1; }
+  .service-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 4rem;
+    font-weight: 900;
+    color: rgba(168,85,247,0.12);
+    position: absolute;
+    top: 1rem; right: 1.5rem;
+    line-height: 1;
+  }
+  .service-icon-wrap {
+    width: 52px; height: 52px;
+    background: linear-gradient(135deg, var(--purple-vivid), var(--purple-bright));
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    margin-bottom: 1.4rem;
+    box-shadow: 0 8px 24px rgba(124,58,237,0.4);
+  }
+  .service-icon-wrap svg {
+    width: 24px;
+    height: 24px;
+    stroke: #fff;
+    fill: none;
+    stroke-width: 1.9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .service-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 0.8rem;
+    color: var(--white);
+  }
+  .service-desc {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+  .service-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1.2rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--purple-bright);
+    text-decoration: none;
+    transition: gap 0.2s;
+  }
+  .service-link:hover { gap: 0.8rem; }
+  .featured-badge {
+    background: linear-gradient(135deg, var(--purple-vivid), var(--purple-bright));
+    color: #fff;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.4rem 1rem;
+    border-radius: 50px;
+    white-space: nowrap;
+    box-shadow: 0 4px 20px rgba(124,58,237,0.4);
+  }
+
+  /* ── REVIEWS ── */
+  .reviews-section { text-align: center; }
+  .stars {
+    display: inline-flex;
+    gap: 4px;
+    margin-bottom: 3rem;
+  }
+  .star {
+    color: var(--gold);
+    font-size: 1.2rem;
+    animation: starPop 0.4s backwards;
+  }
+  .star:nth-child(1){animation-delay:0.1s}
+  .star:nth-child(2){animation-delay:0.2s}
+  .star:nth-child(3){animation-delay:0.3s}
+  .star:nth-child(4){animation-delay:0.4s}
+  .star:nth-child(5){animation-delay:0.5s}
+  @keyframes starPop { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+
+  .reviews-carousel {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.2rem;
+    text-align: left;
+  }
+  .review-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(168,85,247,0.12);
+    border-radius: 20px;
+    padding: 1.8rem;
+    transition: transform 0.3s, border-color 0.3s;
+  }
+  .review-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(168,85,247,0.3);
+  }
+  .review-stars { color: var(--gold); font-size: 0.85rem; margin-bottom: 0.8rem; }
+  .review-text {
+    font-size: 0.9rem;
+    line-height: 1.65;
+    color: var(--text-muted);
+    margin-bottom: 1.2rem;
+    font-style: italic;
+  }
+  .review-author { font-size: 0.8rem; font-weight: 500; color: var(--purple-pale); }
+  .review-platform { font-size: 0.7rem; color: var(--text-muted); }
+  .reviews-note {
+    max-width: 620px;
+    margin: 1rem auto 2.2rem;
+    font-size: 0.92rem;
+    line-height: 1.75;
+    color: var(--text-muted);
+  }
+
+  /* ── CONTACT STRIP ── */
+  .contact-section {
+    padding: 6rem 5%;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .contact-bg {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, rgba(124,58,237,0.2) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .contact-inner {
+    max-width: 1180px;
+    margin: 0 auto;
+    position: relative;
+  }
+  .contact-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, var(--white), var(--purple-glow), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .contact-sub {
+    font-size: 1rem;
+    color: var(--text-muted);
+    margin-bottom: 3rem;
+    line-height: 1.8;
+  }
+  .contact-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+  }
+  .contact-link {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(168,85,247,0.2);
+    color: var(--purple-pale);
+    text-decoration: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    transition: background 0.3s, border-color 0.3s, transform 0.2s;
+  }
+  .contact-link:hover {
+    background: rgba(124,58,237,0.2);
+    border-color: var(--purple-bright);
+    transform: translateY(-2px);
+  }
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1.3fr 0.85fr;
+    gap: 1.8rem;
+    align-items: start;
+    margin-top: 2.5rem;
+  }
+  .contact-panel {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(168,85,247,0.18);
+    border-radius: 24px;
+    padding: 1.6rem;
+    box-shadow: 0 0 40px rgba(124,58,237,0.16);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+  .contact-form-card {
+    text-align: left;
+  }
+  .contact-form-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.7rem;
+    margin-bottom: 0.6rem;
+    color: var(--white);
+  }
+  .contact-form-copy {
+    color: var(--text-muted);
+    font-size: 0.92rem;
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+  }
+  .contact-form {
+    display: grid;
+    gap: 1rem;
+  }
+  .contact-form-row {
+    display: grid;
+    gap: 0.45rem;
+  }
+  .contact-form label {
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--purple-pale);
+  }
+  .contact-form input,
+  .contact-form textarea {
+    width: 100%;
+    border: 1px solid rgba(168,85,247,0.22);
+    border-radius: 16px;
+    background: rgba(26,10,46,0.68);
+    color: var(--white);
+    padding: 0.95rem 1rem;
+    font: inherit;
+    transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
+  }
+  .contact-form textarea {
+    min-height: 150px;
+    resize: vertical;
+  }
+  .contact-form input::placeholder,
+  .contact-form textarea::placeholder {
+    color: rgba(250,245,255,0.38);
+  }
+  .contact-form input:focus,
+  .contact-form textarea:focus {
+    outline: none;
+    border-color: var(--purple-bright);
+    box-shadow: 0 0 0 4px rgba(168,85,247,0.12);
+    background: rgba(26,10,46,0.9);
+  }
+  .contact-form-submit {
+    justify-self: start;
+    border: 0;
+    cursor: pointer;
+    margin-top: 0.25rem;
+  }
+  .contact-form-note {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    line-height: 1.6;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid rgba(168,85,247,0.1);
+    padding: 3rem 5%;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  .footer-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-self: start;
+  }
+  .footer-logo img {
+    display: block;
+    width: clamp(88px, 10vw, 128px);
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.28));
+  }
+  .footer-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+    justify-self: center;
+    justify-content: center;
+    align-items: center;
+  }
+  .footer-links li { display: flex; align-items: center; }
+  .footer-links a {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+  .footer-links a:hover { color: var(--white); }
+  .footer-copy {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    justify-self: end;
+    text-align: right;
+  }
+  .site-credit {
+    width: min(1120px, calc(100% - 2rem));
+    margin: 0.2rem auto 1.7rem;
+    color: rgba(250,245,255,0.48);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-align: center;
+  }
+  .floating-tools {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 160;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+  .floating-tool {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 142px;
+    padding: 0.78rem 1rem;
+    border-radius: 999px;
+    border: 1px solid rgba(192,85,247,0.25);
+    background: rgba(26,10,46,0.82);
+    color: var(--white);
+    text-decoration: none;
+    font-size: 0.76rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.28);
+    cursor: pointer;
+  }
+  .floating-tool:hover { background: rgba(124,58,237,0.3); }
+  .music-player {
+    position: fixed;
+    left: 1rem;
+    bottom: 1rem;
+    z-index: 160;
+    width: min(320px, calc(100vw - 2rem));
+    padding: 1rem 1rem 0.95rem;
+    border-radius: 24px;
+    border: 1px solid rgba(192,85,247,0.22);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)),
+      rgba(26,10,46,0.86);
+    color: var(--white);
+    box-shadow: 0 18px 42px rgba(0,0,0,0.34);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+  .music-player-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.8rem;
+  }
+  .music-player-kicker {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: rgba(245,200,66,0.88);
+    font-size: 0.66rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+  .music-player-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.18rem;
+    letter-spacing: 0.04em;
+    color: var(--white);
+  }
+  .music-player-toggle {
+    width: 52px;
+    height: 52px;
+    border: 0;
+    border-radius: 50%;
+    flex: 0 0 auto;
+    background: radial-gradient(circle at 30% 30%, rgba(233,213,255,0.95), rgba(168,85,247,0.92) 56%, rgba(91,33,182,0.95) 100%);
+    color: var(--white);
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 10px 28px rgba(124,58,237,0.42);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  .music-player-toggle:hover {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 14px 32px rgba(124,58,237,0.52);
+  }
+  .music-player-toggle.is-playing {
+    background: radial-gradient(circle at 30% 30%, rgba(255,238,200,0.95), rgba(245,200,66,0.92) 56%, rgba(168,85,247,0.95) 100%);
+  }
+  .music-player-status {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .music-player-bar {
+    position: relative;
+    width: 100%;
+    height: 6px;
+    margin: 0.75rem 0 0.6rem;
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.12);
+  }
+  .music-player-seek {
+    position: absolute;
+    inset: -7px 0;
+    width: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+    appearance: none;
+    background: transparent;
+  }
+  .music-player-seek::-webkit-slider-thumb {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.96);
+    border: 2px solid rgba(168,85,247,0.95);
+    box-shadow: 0 0 0 5px rgba(168,85,247,0.18);
+  }
+  .music-player-seek::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(168,85,247,0.95);
+    border-radius: 50%;
+    background: rgba(255,255,255,0.96);
+    box-shadow: 0 0 0 5px rgba(168,85,247,0.18);
+  }
+  .music-player-seek::-webkit-slider-runnable-track {
+    height: 18px;
+    background: transparent;
+  }
+  .music-player-seek::-moz-range-track {
+    height: 18px;
+    background: transparent;
+    border: 0;
+  }
+  .music-player-progress {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 0%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, rgba(245,200,66,0.95), rgba(168,85,247,0.95));
+    box-shadow: 0 0 16px rgba(168,85,247,0.32);
+  }
+  .music-player-note {
+    color: rgba(250,245,255,0.68);
+    font-size: 0.76rem;
+    line-height: 1.45;
+  }
+  .whatsapp-float {
+    position: fixed;
+    left: 1rem;
+    bottom: 13rem;
+    z-index: 160;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 54px;
+    height: 54px;
+    padding: 3px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    box-shadow: 0 16px 36px rgba(0,0,0,0.34);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  .whatsapp-float:hover {
+    transform: translateY(-3px) scale(1.04);
+    box-shadow: 0 20px 42px rgba(0,0,0,0.4);
+  }
+  .whatsapp-float img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  #google_translate_element {
+    position: fixed;
+    left: -9999px;
+    top: 0;
+  }
+  .goog-te-banner-frame.skiptranslate,
+  iframe.goog-te-banner-frame,
+  .goog-te-balloon-frame,
+  .goog-logo-link,
+  .goog-te-gadget span {
+    display: none !important;
+  }
+  body { top: 0 !important; }
+
+  /* ── DIVIDER ── */
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(168,85,247,0.2), transparent);
+    margin: 0 auto;
+  }
+
+  /* ── SCROLL REVEAL ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.85s cubic-bezier(0.22,1,0.36,1), transform 0.85s cubic-bezier(0.22,1,0.36,1);
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+  .reveal-delay-4 { transition-delay: 0.4s; }
+
+  /* ── KEYFRAMES ── */
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    to { opacity: 1; }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .nav-links { display: none; }
+    .nav-logo img { width: clamp(78px, 24vw, 108px); }
+    .about-grid { grid-template-columns: 1fr; gap: 3rem; }
+    .media-showcase { grid-template-columns: 1fr; }
+    .media-stack { grid-template-rows: auto; }
+    .media-lead-card { min-height: 360px; }
+    .services-grid { grid-template-columns: 1fr; }
+    .service-card.featured { grid-column: 1; grid-template-columns: 1fr; gap: 1.5rem; }
+    .reviews-carousel { grid-template-columns: 1fr; }
+    .contact-grid { grid-template-columns: 1fr; }
+    footer { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+    .footer-logo { justify-self: center; }
+    .footer-links { justify-content: center; }
+    .footer-copy { justify-self: center; text-align: center; }
+    .site-credit { margin: 0.2rem auto 1.5rem; font-size: 0.68rem; }
+    .music-player {
+      left: 0.75rem;
+      bottom: 0.75rem;
+      width: min(280px, calc(100vw - 1.5rem));
+      padding: 0.9rem 0.9rem 0.85rem;
+    }
+    .music-player-title { font-size: 1.05rem; }
+    .music-player-toggle { width: 48px; height: 48px; }
+    .whatsapp-float {
+      left: 0.75rem;
+      bottom: 12.3rem;
+      width: 50px;
+      height: 50px;
+      padding: 3px;
+    }
+    .whatsapp-float img {
+      width: 100%;
+      height: 100%;
+    }
+    .floating-tools { right: 0.75rem; bottom: 0.75rem; }
+    .floating-tool { min-width: 126px; padding: 0.72rem 0.9rem; font-size: 0.7rem; }
+  }
+
+  /* ── BAROQUE PATTERN OVERLAY ── */
+  .baroque-pattern {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .baroque-pattern::before,
+  .baroque-pattern::after {
+    content: '';
+    position: absolute;
+    inset: -5%;
+    width: 110%;
+    height: 110%;
+  }
+  .baroque-pattern::before {
+    background-image: url('estampado-elegante.jpeg');
+    background-repeat: repeat;
+    background-size: 410px 410px;
+    background-position: center;
+    filter: grayscale(1) brightness(0.9) contrast(1.05);
+    opacity: 0.27;
+    mix-blend-mode: screen;
+    animation: baroqueFloat 22s ease-in-out infinite, baroqueColorShift 10s ease-in-out infinite alternate;
+  }
+  .baroque-pattern::after {
+    background:
+      linear-gradient(180deg, rgba(26,10,46,0.28), rgba(26,10,46,0.42)),
+      radial-gradient(circle at 50% 30%, rgba(192,132,252,0.08), transparent 48%);
+    opacity: 1;
+  }
+  @keyframes baroqueFloat {
+    0%   { transform: translate(0, 0); }
+    33%  { transform: translate(0.5%, 0.8%); }
+    66%  { transform: translate(-0.4%, 1.2%); }
+    100% { transform: translate(0, 0); }
+  }
+  @keyframes baroqueColorShift {
+    0%   { opacity: 0.07; }
+    50%  { opacity: 0.13; }
+    100% { opacity: 0.08; }
+  }
+
+  /* ── MAP ── */
+  .map-container {
+    margin-top: 2.5rem;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid rgba(168,85,247,0.3);
+    box-shadow: 0 0 40px rgba(124,58,237,0.25), inset 0 0 0 1px rgba(168,85,247,0.1);
+    position: relative;
+  }
+  .map-container::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    pointer-events: none;
+    z-index: 10;
+    box-shadow: inset 0 0 30px rgba(26,10,46,0.5);
+  }
+  #baroque-map {
+    height: 460px;
+    width: 100%;
+    filter: saturate(0.7) hue-rotate(200deg) brightness(0.75);
+  }
+  .map-pin-label {
+    margin-top: 1rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+  .map-address {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--purple-glow);
+    margin-top: 0.3rem;
+  }
+
+  .cursor-glow {
+    position: fixed;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(124,58,237,0.06) 0%, transparent 70%);
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    z-index: 0;
+    transition: left 0.15s ease-out, top 0.15s ease-out;
+  }
+  .click-burst-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 180;
+    overflow: hidden;
+  }
+  .click-flash {
+    position: fixed;
+    width: 42px;
+    height: 42px;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    will-change: transform, opacity;
+  }
+  .click-flash::before,
+  .click-flash::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 999px;
+  }
+  .click-flash::before {
+    width: 42px;
+    height: 42px;
+    background: radial-gradient(circle, rgba(216,180,255,0.95) 0%, rgba(168,85,247,0.45) 34%, rgba(124,58,237,0.16) 58%, transparent 72%);
+    animation: flashBloom 420ms ease-out forwards;
+  }
+  .click-flash::after {
+    width: 4px;
+    height: 30px;
+    background: linear-gradient(180deg, transparent 0%, rgba(233,213,255,0.95) 20%, rgba(168,85,247,0.88) 50%, rgba(233,213,255,0.95) 80%, transparent 100%);
+    box-shadow: 0 0 10px rgba(168,85,247,0.45);
+    animation: flashRay 420ms ease-out forwards;
+  }
+  .click-spark {
+    position: fixed;
+    width: 3px;
+    height: 16px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, transparent 0%, rgba(233,213,255,0.92) 25%, rgba(168,85,247,0.9) 50%, rgba(233,213,255,0.92) 75%, transparent 100%);
+    box-shadow: 0 0 10px rgba(168,85,247,0.35);
+    pointer-events: none;
+    transform: translate(-50%, -50%) rotate(var(--angle, 0deg));
+    animation: sparkFade 460ms ease-out forwards;
+    will-change: transform, opacity;
+  }
+  @keyframes flashBloom {
+    0% {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.2);
+    }
+    35% {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(1.35);
+    }
+  }
+  @keyframes flashRay {
+    0% {
+      opacity: 0;
+      transform: translate(-50%, -50%) rotate(0deg) scaleY(0.35);
+    }
+    30% {
+      opacity: 0.95;
+      transform: translate(-50%, -50%) rotate(0deg) scaleY(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-50%, -50%) rotate(0deg) scaleY(1.2);
+    }
+  }
+  @keyframes sparkFade {
+    0% {
+      opacity: 0;
+      transform: translate(-50%, -50%) rotate(var(--angle, 0deg)) scaleY(0.3);
+    }
+    30% {
+      opacity: 0.9;
+      transform: translate(-50%, -50%) rotate(var(--angle, 0deg)) scaleY(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-50%, -50%) rotate(var(--angle, 0deg)) scaleY(1.15);
+    }
+  }
+  .promo-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    background: rgba(7, 2, 14, 0.72);
+    backdrop-filter: blur(8px) brightness(0.55);
+    -webkit-backdrop-filter: blur(8px) brightness(0.55);
+    z-index: 320;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.35s ease, visibility 0.35s ease;
+  }
+  .promo-overlay.is-visible {
+    opacity: 1;
+    visibility: visible;
+  }
+  .promo-modal {
+    position: relative;
+    width: min(560px, calc(100vw - 2rem));
+    max-height: calc(100vh - 2rem);
+    transform: translateY(46px) scale(0.9);
+    opacity: 0;
+    transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.55s ease;
+  }
+  .promo-modal::before,
+  .promo-modal::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -1.2rem;
+    transform: translateX(-50%);
+    pointer-events: none;
+    opacity: 0;
+    z-index: -1;
+  }
+  .promo-modal::before {
+    width: 72%;
+    height: 120px;
+    background:
+      radial-gradient(circle at 50% 100%, rgba(255,205,96,0.95) 0%, rgba(255,120,28,0.72) 28%, rgba(255,72,0,0.24) 56%, transparent 76%);
+    filter: blur(18px);
+  }
+  .promo-modal::after {
+    width: 86%;
+    height: 150px;
+    background:
+      radial-gradient(circle at 12% 100%, rgba(255,162,43,0.82) 0%, transparent 36%),
+      radial-gradient(circle at 32% 100%, rgba(255,119,0,0.72) 0%, transparent 34%),
+      radial-gradient(circle at 50% 100%, rgba(255,214,122,0.96) 0%, transparent 38%),
+      radial-gradient(circle at 68% 100%, rgba(255,104,0,0.72) 0%, transparent 34%),
+      radial-gradient(circle at 88% 100%, rgba(255,162,43,0.82) 0%, transparent 36%);
+    filter: blur(10px);
+  }
+  .promo-overlay.is-visible .promo-modal {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  .promo-overlay.is-visible .promo-modal::before {
+    animation: fireBaseIn 0.85s ease-out 0.08s forwards;
+  }
+  .promo-overlay.is-visible .promo-modal::after {
+    animation: flameLicksIn 1s ease-out 0.12s forwards;
+  }
+  .promo-close {
+    position: absolute;
+    top: -0.9rem;
+    right: -0.9rem;
+    z-index: 3;
+    width: 42px;
+    height: 42px;
+    border: 1px solid rgba(250,245,255,0.22);
+    border-radius: 999px;
+    background: rgba(18,7,31,0.88);
+    color: var(--white);
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.36);
+  }
+  .promo-close:hover {
+    background: rgba(124,58,237,0.5);
+  }
+  .promo-poster {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: calc(100vh - 2rem);
+    object-fit: contain;
+    border-radius: 24px;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(250,245,255,0.08), 0 0 34px rgba(255,118,0,0.22);
+  }
+  @keyframes fireBaseIn {
+    0% {
+      opacity: 0;
+      transform: translateX(-50%) translateY(18px) scaleX(0.72) scaleY(0.45);
+    }
+    45% {
+      opacity: 0.95;
+      transform: translateX(-50%) translateY(0) scaleX(1.02) scaleY(1.05);
+    }
+    100% {
+      opacity: 0.72;
+      transform: translateX(-50%) translateY(0) scaleX(1) scaleY(1);
+    }
+  }
+  @keyframes flameLicksIn {
+    0% {
+      opacity: 0;
+      transform: translateX(-50%) translateY(22px) scale(0.82);
+    }
+    38% {
+      opacity: 0.92;
+      transform: translateX(-50%) translateY(-2px) scale(1.04);
+    }
+    100% {
+      opacity: 0.62;
+      transform: translateX(-50%) translateY(0) scale(1);
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor-glow" id="cursorGlow"></div>
+<div class="click-burst-layer" id="clickBurstLayer" aria-hidden="true"></div>
+<div class="promo-overlay" id="promoOverlay" aria-hidden="true">
+  <div class="promo-modal">
+    <button type="button" class="promo-close" id="promoClose" aria-label="Cerrar cartel">×</button>
+    <img src="21-feb-baroque.png" alt="Cartel promocional Baroque" class="promo-poster">
+  </div>
+</div>
+<div id="google_translate_element" aria-hidden="true"></div>
+<div class="music-player" aria-label="Reproductor de Baroque">
+  <div class="music-player-header">
+    <div>
+      <span class="music-player-kicker">Baroque Session</span>
+      <strong class="music-player-title">Nuestra canción</strong>
+    </div>
+    <button type="button" class="music-player-toggle" id="musicToggle" aria-label="Reproducir canción">▶</button>
+  </div>
+  <div class="music-player-bar">
+    <span class="music-player-progress" id="musicProgress"></span>
+    <input type="range" class="music-player-seek" id="musicSeek" min="0" max="1000" value="0" aria-label="Avanzar o retroceder canción">
+  </div>
+  <div class="music-player-status">
+    <span id="musicState">Pulsa para escuchar</span>
+    <span id="musicTime">0:00</span>
+  </div>
+  <p class="music-player-note">Reproduce el tema desde aquí sin salir de la portada.</p>
+  <audio id="baroqueAudio" preload="metadata">
+    <source src="baroque-cancion.mpeg" type="audio/mpeg">
+  </audio>
+</div>
+<a href="https://wa.me/34642909314" class="whatsapp-float" aria-label="Hablar por WhatsApp con Baroque" target="_blank" rel="noopener noreferrer">
+  <img src="whatsapp-button.png" alt="WhatsApp">
+</a>
+<div class="floating-tools">
+  <a href="accesibilidad.html" class="floating-tool">Accesibilidad</a>
+  <button type="button" class="floating-tool" id="langToggle">English</button>
+</div>
+
+<!-- NAVBAR -->
+<nav>
+  <a href="#inicio" class="nav-logo" aria-label="Baroque Disco Pub">
+    <img src="baorque3dd.png" alt="Baroque Disco Pub">
+  </a>
+  <ul class="nav-links">
+    <li><a href="#inicio">Inicio</a></li>
+    <li><a href="#nosotros">Nosotros</a></li>
+    <li><a href="#servicios">Servicios</a></li>
+    <li><a href="carteles.html">Carteles</a></li>
+    <li><a href="#resenas">Reseñas</a></li>
+    <li><a href="#contacto" class="nav-cta">Contacto</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="inicio">
+  <!-- BAROQUE PATTERN -->
+  <div class="baroque-pattern" aria-hidden="true"></div>
+
+  <div class="party-lights" aria-hidden="true">
+    <span class="light-beam beam-left"></span>
+    <span class="light-beam beam-center"></span>
+    <span class="light-beam beam-right"></span>
+    <span class="strobe-dot strobe-1"></span>
+    <span class="strobe-dot strobe-2"></span>
+    <span class="strobe-dot strobe-3"></span>
+    <span class="strobe-dot strobe-4"></span>
+    <span class="strobe-dot strobe-5"></span>
+  </div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <p class="hero-eyebrow">Gijón, Asturias · Bailes Latinos</p>
+  <h1 class="hero-title notranslate" translate="no">BAROQUE<br>DISCO PUB</h1>
+  <p class="hero-subtitle-italic">Donde la elegancia se fusiona con el ritmo</p>
+  <p class="hero-desc">Sumérgete en una experiencia única. Música latina, cócteles exquisitos, luces vibrantes y una pista de baile que no para. La noche comienza aquí.</p>
+  <div class="hero-actions">
+    <a href="#servicios" class="btn-primary">Explorar servicios</a>
+    <a href="#contacto" class="btn-ghost">Contactar</a>
+  </div>
+
+  <div class="hero-scroll-hint">
+    <span class="scroll-label">Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ABOUT -->
+<section class="section" id="nosotros">
+  <div class="section-inner">
+    <div class="about-grid">
+      <div>
+        <p class="section-eyebrow reveal">Sobre nosotros</p>
+        <h2 class="section-title reveal reveal-delay-1">El mejor pub de bailes latinos de la ciudad</h2>
+        <p class="section-text reveal reveal-delay-2">Desde nuestra inauguración el 25 de mayo de 2019, Baroque Disco Pub ha sido un enclave vibrante donde la elegancia y la energía convergen en torno a los ritmos latinos.</p>
+        <p class="section-text reveal reveal-delay-2">Reservados exclusivos, cócteles exquisitos, eventos emocionantes y un espacio acogedor definen una experiencia pensada para convertir cada noche en un recuerdo inolvidable.</p>
+
+        <a href="sobre-nosotros.html" class="about-more-link reveal reveal-delay-3">+ Info →</a>
+
+        <div class="features-row">
+          <div class="feature-item reveal reveal-delay-2">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17l-5.6 3 1.1-6.2L3 9.6l6.2-.9z"/>
+              </svg>
+            </div>
+            <div class="feature-text">
+              <h4>Espacios exclusivos</h4>
+              <p>Reservados VIP con servicio personalizado en un ambiente íntimo y sofisticado.</p>
+            </div>
+          </div>
+          <div class="feature-item reveal reveal-delay-3">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 4h16l-6 7v6l-4 2v-8z"/>
+                <path d="M9 4l3 4 3-4"/>
+              </svg>
+            </div>
+            <div class="feature-text">
+              <h4>Camareros profesionales</h4>
+              <p>Un equipo apasionado que eleva tu experiencia con servicio experto y cercano.</p>
+            </div>
+          </div>
+          <div class="feature-item reveal reveal-delay-4">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 4v11a3 3 0 1 1-2-2.8"/>
+                <path d="M12 7l8-2v8"/>
+              </svg>
+            </div>
+            <div class="feature-text">
+              <h4>Música latina en vivo</h4>
+              <p>Salsa, bachata, merengue y más. La pista siempre llena de energía.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-visual reveal reveal-delay-2">
+        <div class="visual-card">
+          <div class="visual-card-bg"></div>
+          <div class="about-gallery">
+            <div class="about-gallery-item">
+              <img src="gallery-1.jpg" alt="Grupo disfrutando en la barra de Baroque Disco Pub" loading="lazy">
+            </div>
+            <div class="about-gallery-item">
+              <img src="gallery-2.jpg" alt="Clientes posando en una noche de Baroque Disco Pub" loading="lazy">
+            </div>
+            <div class="about-gallery-item">
+              <img src="gallery-3.jpg" alt="Reservado con clientes en Baroque Disco Pub" loading="lazy">
+            </div>
+            <div class="about-gallery-item">
+              <img src="gallery-4.jpg" alt="Grupo celebrando en Baroque Disco Pub" loading="lazy">
+            </div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-item">
+              <div class="stat-number">10+</div>
+              <div class="stat-label">Años de experiencia</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-number">★★★★★</div>
+              <div class="stat-label">Valoración Google</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-number">100%</div>
+              <div class="stat-label">Latino Spirit</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-number">∞</div>
+              <div class="stat-label">Momentos únicos</div>
+            </div>
+          </div>
+          <div class="hours-card">
+            <div class="hours-title">Horario de apertura</div>
+            <div class="hours-row">
+              <strong>Viernes y Sábado</strong>
+              <span>00:00 – 07:30 h</span>
+            </div>
+            <div class="hours-row">
+              <strong>Domingo</strong>
+              <span>00:00 – 05:00 h</span>
+            </div>
+            <div class="hours-row">
+              <strong>Jueves (verano)</strong>
+              <span>00:00 – 06:00 h</span>
+            </div>
+            <div class="hours-badge">Vísperas de festivo hasta las 7:30 h</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- MEDIA -->
+<section class="section" id="ambiente">
+  <div class="section-inner">
+    <div class="services-header">
+      <p class="section-eyebrow reveal">Así se vive Baroque</p>
+      <h2 class="section-title reveal reveal-delay-1">Imágenes reales<br>del ambiente</h2>
+    </div>
+
+    <div class="media-showcase">
+      <div class="media-card media-lead-card reveal">
+        <video class="media-lead" autoplay muted loop playsinline preload="metadata">
+          <source src="media-1.mp4" type="video/mp4">
+        </video>
+        <div class="media-caption">
+          <strong>Noche Baroque</strong>
+          <span>Ritmo, luces y ambiente latino en movimiento.</span>
+        </div>
+      </div>
+      <div class="media-stack">
+        <div class="media-card reveal reveal-delay-1">
+          <video autoplay muted loop playsinline preload="metadata">
+            <source src="media-2.mp4" type="video/mp4">
+          </video>
+          <div class="media-caption">
+            <strong>Reservados</strong>
+            <span>Espacios para celebrar con tu gente.</span>
+          </div>
+        </div>
+        <div class="media-card reveal reveal-delay-2">
+          <video autoplay muted loop playsinline preload="metadata">
+            <source src="media-3.mp4" type="video/mp4">
+          </video>
+          <div class="media-caption">
+            <strong>Experiencia</strong>
+            <span>Detalles reales de una noche en Baroque.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SERVICES -->
+<section class="section services-section" id="servicios">
+  <div class="section-inner">
+    <div class="services-header">
+      <p class="section-eyebrow reveal">Nuestros servicios</p>
+      <h2 class="section-title reveal reveal-delay-1">Todo lo que necesitas<br>para una noche perfecta</h2>
+    </div>
+
+    <div class="services-grid">
+      <div class="service-card reveal">
+        <div class="service-number">01</div>
+        <div class="service-icon-wrap">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="4" y="11" width="16" height="10" rx="2"></rect>
+            <path d="M8 11V8a4 4 0 1 1 8 0v3"></path>
+          </svg>
+        </div>
+        <h3 class="service-name">Reservados Privados</h3>
+        <p class="service-desc">Disfruta de tu espacio exclusivo con servicio VIP. Perfecto para grupos y celebraciones que merecen un trato especial.</p>
+        <a href="servicios.html" class="service-link">Quiero saber más →</a>
+      </div>
+      <div class="service-card reveal reveal-delay-1">
+        <div class="service-number">02</div>
+        <div class="service-icon-wrap">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+            <path d="M8 2v4M16 2v4M3 10h18"></path>
+            <path d="M12 13l1.1 2.2 2.4.4-1.7 1.7.4 2.4-2.2-1.2-2.2 1.2.4-2.4-1.7-1.7 2.4-.4z"></path>
+          </svg>
+        </div>
+        <h3 class="service-name">Eventos Especiales</h3>
+        <p class="service-desc">Noches temáticas, concursos de baile y eventos únicos diseñados para que vivas la mejor experiencia latina de la ciudad.</p>
+        <a href="servicios.html" class="service-link">Quiero saber más →</a>
+      </div>
+      <div class="service-card featured reveal reveal-delay-2">
+        <div>
+          <div class="service-icon-wrap">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M3 21h18"></path>
+              <path d="M5 21V6l7-3 7 3v15"></path>
+              <path d="M9 10h.01M15 10h.01M9 14h.01M15 14h.01"></path>
+            </svg>
+          </div>
+          <h3 class="service-name">Reserva de sala completa</h3>
+          <p class="service-desc">¿Celebración especial? Reserva todo el espacio de Baroque para tu evento privado. Cumpleaños, despedidas, eventos corporativos… lo hacemos inolvidable con servicio en mesa incluido.</p>
+          <a href="servicios.html" class="service-link">Quiero saber más →</a>
+        </div>
+        <div>
+          <span class="featured-badge">Más popular</span>
+        </div>
+      </div>
+      <div class="service-card reveal">
+        <div class="service-number">03</div>
+        <div class="service-icon-wrap">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3 12h18"></path>
+            <path d="M6 12a6 6 0 0 1 12 0"></path>
+            <path d="M12 6V5"></path>
+            <path d="M5 16h14"></path>
+          </svg>
+        </div>
+        <h3 class="service-name">Servicio en Mesa</h3>
+        <p class="service-desc">Sin esperas. Tus bebidas llegan directamente a tu mesa. Cócteles artesanales y las mejores marcas, a tu ritmo.</p>
+        <a href="servicios.html" class="service-link">Quiero saber más →</a>
+      </div>
+      <div class="service-card reveal reveal-delay-1">
+        <div class="service-number">04</div>
+        <div class="service-icon-wrap">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 20V9"></path>
+            <path d="M10 20V4"></path>
+            <path d="M15 20v-7"></path>
+            <path d="M20 20V7"></path>
+          </svg>
+        </div>
+        <h3 class="service-name">Bailes Latinos</h3>
+        <p class="service-desc">Salsa, bachata, merengue y más. La pista de baile de Baroque vibra cada noche con la mejor música latina de la ciudad.</p>
+        <a href="servicios.html" class="service-link">Quiero saber más →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- REVIEWS -->
+<section class="section reviews-section" id="resenas">
+  <div class="section-inner">
+    <p class="section-eyebrow reveal">Reseñas destacadas</p>
+    <h2 class="section-title reveal reveal-delay-1">Las opiniones mejor valoradas</h2>
+    <div class="stars">
+      <span class="star">★</span>
+      <span class="star">★</span>
+      <span class="star">★</span>
+      <span class="star">★</span>
+      <span class="star">★</span>
+    </div>
+    <p class="reviews-note reveal reveal-delay-1">Selección de reseñas positivas de Google que reflejan la experiencia que más valoran nuestros clientes.</p>
+
+    <div class="reviews-carousel">
+      <div class="review-card reveal">
+        <div class="review-stars">★★★★★</div>
+        <div class="review-author">Silvia García</div>
+        <div class="review-platform">Google · Marzo 2023</div>
+      </div>
+      <div class="review-card reveal reveal-delay-1">
+        <div class="review-stars">★★★★★</div>
+        <div class="review-author">Enmanuel de Jesús L.</div>
+        <div class="review-platform">Google · Enero 2023</div>
+      </div>
+      <div class="review-card reveal reveal-delay-2">
+        <div class="review-stars">★★★★★</div>
+        <div class="review-author">Amelia Gómez Pérez</div>
+        <div class="review-platform">Google · Diciembre 2022</div>
+      </div>
+      <div class="review-card reveal">
+        <div class="review-stars">★★★★★</div>
+        <div class="review-author">Cristina Ocampo</div>
+        <div class="review-platform">Google · Diciembre 2022</div>
+      </div>
+      <div class="review-card reveal reveal-delay-1">
+        <div class="review-stars">★★★★★</div>
+        <div class="review-author">Angel Sánchez Gutiérrez</div>
+        <div class="review-platform">Google · Diciembre 2022</div>
+      </div>
+      <div class="review-card reveal reveal-delay-2">
+        <div class="review-stars">★★★★★</div>
+        <div class="review-author">Javier Flores</div>
+        <div class="review-platform">Google · Julio 2022</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact-section" id="contacto">
+  <div class="contact-bg"></div>
+  <div class="contact-inner">
+    <p class="section-eyebrow reveal" style="text-align:center">Encuéntranos</p>
+    <h2 class="contact-title reveal reveal-delay-1">¿Lista<br>la noche?</h2>
+    <p class="contact-sub reveal reveal-delay-2">Síguenos en redes o contáctanos para reservar tu espacio. La experiencia Baroque te espera.</p>
+    <div class="contact-links reveal reveal-delay-3">
+      <a href="https://www.instagram.com/gijonbaroque/" class="contact-link" target="_blank">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+        @gijonbaroque
+      </a>
+      <a href="https://www.facebook.com/BaroqueDiscoPub/" class="contact-link" target="_blank">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+        Facebook
+      </a>
+      <a href="mailto:baroquegijon@gmail.com" class="contact-link">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        Contactar
+      </a>
+      <a href="https://maps.google.com/?q=Rodríguez+San+Pedro+43,+C.+Marqués+de+San+Esteban,+50,+33206+Gijón,+Asturias" class="contact-link" target="_blank">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Gijón, Asturias
+      </a>
+    </div>
+
+    <div class="contact-grid reveal reveal-delay-3">
+      <div class="contact-panel">
+        <div class="map-container" style="margin-top:0;">
+          <div id="baroque-map"></div>
+        </div>
+        <p class="map-pin-label">Nuestra ubicación</p>
+        <p class="map-address">Rodríguez San Pedro 43, C. Marqués de San Esteban, 50 · 33206 Gijón, Asturias</p>
+      </div>
+      <div class="contact-panel contact-form-card">
+        <h3 class="contact-form-title">Escríbenos</h3>
+        <p class="contact-form-copy">Envía tu consulta por correo para reservas, eventos privados o cualquier duda sobre Baroque.</p>
+        <form class="contact-form" action="mailto:baroquegijon@gmail.com" method="post" enctype="text/plain">
+          <div class="contact-form-row">
+            <label for="contact-name">Nombre</label>
+            <input id="contact-name" name="Nombre" type="text" placeholder="Tu nombre" required>
+          </div>
+          <div class="contact-form-row">
+            <label for="contact-email">Correo</label>
+            <input id="contact-email" name="Correo" type="email" placeholder="tu@email.com" required>
+          </div>
+          <div class="contact-form-row">
+            <label for="contact-subject">Asunto</label>
+            <input id="contact-subject" name="Asunto" type="text" placeholder="Reserva, evento, consulta..." required>
+          </div>
+          <div class="contact-form-row">
+            <label for="contact-message">Mensaje</label>
+            <textarea id="contact-message" name="Mensaje" placeholder="Cuéntanos qué necesitas" required></textarea>
+          </div>
+          <button type="submit" class="btn-primary contact-form-submit">Enviar correo</button>
+          <p class="contact-form-note">Al pulsar el botón se abrirá tu aplicación de correo predeterminada con el mensaje preparado para enviar a `baroquegijon@gmail.com`.</p>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo notranslate" translate="no">
+    <img src="baorque3dd.png" alt="Baroque Disco Pub">
+  </div>
+  <ul class="footer-links">
+    <li><a href="aviso-legal.html">Aviso Legal</a></li>
+    <li><a href="privacidad.html">Privacidad</a></li>
+    <li><a href="cookies.html">Cookies</a></li>
+    <li><a href="accesibilidad.html">Accesibilidad</a></li>
+  </ul>
+  <span class="footer-copy">© 2026 Baroque Disco Pub. Todos los derechos reservados.</span>
+</footer>
+<p class="site-credit">Desarrollada por LuckyBase</p>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+  function googleTranslateElementInit() {
+    if (!window.google || !window.google.translate) return;
+    new window.google.translate.TranslateElement({
+      pageLanguage: 'es',
+      includedLanguages: 'es,en',
+      autoDisplay: false
+    }, 'google_translate_element');
+  }
+
+  function applyLanguage(lang) {
+    const select = document.querySelector('.goog-te-combo');
+    if (!select) return false;
+    if (select.value === lang) return true;
+    select.value = lang;
+    select.dispatchEvent(new Event('change'));
+    return true;
+  }
+
+  function requestLanguage(lang) {
+    let tries = 0;
+    const timer = setInterval(() => {
+      tries += 1;
+      if (applyLanguage(lang) || tries >= 30) clearInterval(timer);
+    }, 300);
+  }
+</script>
+<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+<script>
+  // Cursor glow
+  const glow = document.getElementById('cursorGlow');
+  const clickBurstLayer = document.getElementById('clickBurstLayer');
+  const promoOverlay = document.getElementById('promoOverlay');
+  const promoClose = document.getElementById('promoClose');
+  const baroqueAudio = document.getElementById('baroqueAudio');
+  const musicToggle = document.getElementById('musicToggle');
+  const musicProgress = document.getElementById('musicProgress');
+  const musicSeek = document.getElementById('musicSeek');
+  const musicState = document.getElementById('musicState');
+  const musicTime = document.getElementById('musicTime');
+  document.addEventListener('mousemove', e => {
+    glow.style.left = e.clientX + 'px';
+    glow.style.top = e.clientY + 'px';
+  });
+
+  function formatAudioTime(value) {
+    if (!Number.isFinite(value)) return '0:00';
+    const minutes = Math.floor(value / 60);
+    const seconds = Math.floor(value % 60);
+    return `${minutes}:${String(seconds).padStart(2, '0')}`;
+  }
+
+  function syncMusicPlayer() {
+    if (!baroqueAudio || !musicProgress || !musicTime || !musicState || !musicToggle || !musicSeek) return;
+    const duration = baroqueAudio.duration || 0;
+    const progress = duration ? (baroqueAudio.currentTime / duration) * 100 : 0;
+    musicProgress.style.width = `${progress}%`;
+    musicSeek.value = String(Math.round(progress * 10));
+    musicTime.textContent = formatAudioTime(baroqueAudio.currentTime);
+    if (baroqueAudio.paused) {
+      musicToggle.textContent = '▶';
+      musicToggle.classList.remove('is-playing');
+      musicToggle.setAttribute('aria-label', 'Reproducir canción');
+      musicState.textContent = duration && baroqueAudio.currentTime > 0 ? 'Pausado' : 'Pulsa para escuchar';
+    } else {
+      musicToggle.textContent = '❚❚';
+      musicToggle.classList.add('is-playing');
+      musicToggle.setAttribute('aria-label', 'Pausar canción');
+      musicState.textContent = 'Reproduciendo';
+    }
+  }
+
+  if (baroqueAudio && musicToggle && musicSeek) {
+    musicToggle.addEventListener('click', async () => {
+      try {
+        if (baroqueAudio.paused) {
+          await baroqueAudio.play();
+        } else {
+          baroqueAudio.pause();
+        }
+      } catch (error) {
+        musicState.textContent = 'No se pudo reproducir';
+      }
+      syncMusicPlayer();
+    });
+
+    const seekAudio = () => {
+      if (!baroqueAudio.duration) return;
+      const targetProgress = Number(musicSeek.value) / 1000;
+      baroqueAudio.currentTime = targetProgress * baroqueAudio.duration;
+      syncMusicPlayer();
+    };
+
+    musicSeek.addEventListener('input', seekAudio);
+    musicSeek.addEventListener('change', seekAudio);
+
+    baroqueAudio.addEventListener('timeupdate', syncMusicPlayer);
+    baroqueAudio.addEventListener('loadedmetadata', syncMusicPlayer);
+    baroqueAudio.addEventListener('play', syncMusicPlayer);
+    baroqueAudio.addEventListener('pause', syncMusicPlayer);
+    baroqueAudio.addEventListener('ended', () => {
+      baroqueAudio.currentTime = 0;
+      syncMusicPlayer();
+    });
+    syncMusicPlayer();
+  }
+
+  function closePromoOverlay() {
+    if (!promoOverlay) return;
+    promoOverlay.classList.remove('is-visible');
+    promoOverlay.setAttribute('aria-hidden', 'true');
+  }
+
+  if (promoOverlay) {
+    window.setTimeout(() => {
+      promoOverlay.classList.add('is-visible');
+      promoOverlay.setAttribute('aria-hidden', 'false');
+    }, 180);
+
+    promoOverlay.addEventListener('click', e => {
+      if (e.target === promoOverlay) closePromoOverlay();
+    });
+  }
+
+  if (promoClose) {
+    promoClose.addEventListener('click', closePromoOverlay);
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closePromoOverlay();
+  });
+
+  function spawnBottleClick(x, y) {
+    if (!clickBurstLayer) return;
+
+    const flash = document.createElement('div');
+    flash.className = 'click-flash';
+    flash.style.left = `${x}px`;
+    flash.style.top = `${y}px`;
+    clickBurstLayer.appendChild(flash);
+    window.setTimeout(() => flash.remove(), 460);
+
+    const sparkAngles = [0, 45, 90, 135];
+    for (let i = 0; i < sparkAngles.length; i += 1) {
+      const spark = document.createElement('span');
+      spark.className = 'click-spark';
+      spark.style.left = `${x}px`;
+      spark.style.top = `${y}px`;
+      spark.style.setProperty('--angle', `${sparkAngles[i]}deg`);
+      spark.style.animationDelay = `${i * 18}ms`;
+      clickBurstLayer.appendChild(spark);
+      window.setTimeout(() => spark.remove(), 500);
+    }
+  }
+
+  document.addEventListener('click', e => {
+    spawnBottleClick(e.clientX, e.clientY);
+  });
+
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.12 });
+  reveals.forEach(el => observer.observe(el));
+
+  // Parallax orbs on scroll
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    document.querySelector('.orb-1').style.transform = `translate(${y*0.03}px, ${y*0.04}px)`;
+    document.querySelector('.orb-2').style.transform = `translate(${-y*0.02}px, ${-y*0.03}px)`;
+    document.querySelector('.orb-3').style.transform = `translate(${y*0.015}px, ${y*0.025}px)`;
+  });
+
+  // Nav scroll effect
+  const nav = document.querySelector('nav');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 60) {
+      nav.style.background = 'rgba(26,10,46,0.85)';
+    } else {
+      nav.style.background = 'rgba(26,10,46,0.6)';
+    }
+  });
+
+  // Leaflet Map — Baroque Disco Pub, Gijón
+  // Coordinates pending review for Rodríguez San Pedro 43 / C. Marqués de San Esteban, 50, Gijón
+  const mapCoords = [43.5270, -5.6720];
+  const map = L.map('baroque-map', {
+    center: mapCoords,
+    zoom: 16,
+    scrollWheelZoom: false,
+    zoomControl: true,
+  });
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
+    maxZoom: 19,
+  }).addTo(map);
+
+  // Custom purple marker
+  const markerIcon = L.divIcon({
+    className: '',
+    html: `<div style="
+      width:36px;height:36px;
+      background:linear-gradient(135deg,#7c3aed,#a855f7);
+      border-radius:50% 50% 50% 0;
+      transform:rotate(-45deg);
+      box-shadow:0 0 20px rgba(168,85,247,0.8),0 0 40px rgba(124,58,237,0.4);
+      border:2px solid rgba(255,255,255,0.4);
+    "></div>
+    <div style="
+      position:absolute;top:50%;left:50%;
+      transform:translate(-50%,-60%) rotate(0deg);
+      font-size:14px;
+      filter:drop-shadow(0 0 4px #fff);
+    ">♪</div>`,
+    iconSize: [36, 36],
+    iconAnchor: [18, 36],
+    popupAnchor: [0, -40],
+  });
+
+  const marker = L.marker(mapCoords, { icon: markerIcon }).addTo(map);
+  marker.bindPopup(`
+    <div style="font-family:'DM Sans',sans-serif;text-align:center;padding:4px 8px;">
+      <strong class="notranslate" translate="no" style="font-family:'Playfair Display',serif;font-size:1rem;color:#7c3aed;">Baroque Disco Pub</strong><br/>
+      <span style="font-size:0.78rem;color:#555;">Rodríguez San Pedro 43, C. Marqués de San Esteban, 50<br/>33206 Gijón, Asturias</span>
+    </div>
+  `).openPopup();
+
+  // Enable scroll wheel zoom on click
+  map.on('click', () => map.scrollWheelZoom.enable());
+  map.on('mouseout', () => map.scrollWheelZoom.disable());
+
+  const langToggle = document.getElementById('langToggle');
+  if (langToggle) {
+    let currentLang = 'es';
+    langToggle.addEventListener('click', () => {
+      currentLang = currentLang === 'es' ? 'en' : 'es';
+      requestLanguage(currentLang);
+      langToggle.textContent = currentLang === 'es' ? 'English' : 'Español';
+    });
+  }
+</script>
+</body>
+</html>
