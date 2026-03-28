@@ -7,7 +7,6 @@
 <title>Baroque Disco Pub — Gijón</title>
 <link rel="icon" type="image/png" href="baorque3dd.png">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <style>
   :root {
     --purple-deep: #1a0a2e;
@@ -1041,6 +1040,12 @@
     box-shadow: 0 18px 42px rgba(0,0,0,0.34);
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
+    transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s ease;
+    will-change: transform;
+  }
+  .music-player.is-minimized {
+    transform: translateX(calc(-100% + 96px));
+    box-shadow: 0 14px 30px rgba(0,0,0,0.28);
   }
   .music-player-header {
     display: flex;
@@ -1048,6 +1053,41 @@
     justify-content: space-between;
     gap: 1rem;
     margin-bottom: 0.8rem;
+  }
+  .music-player-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+  .music-player-minimize {
+    min-height: 38px;
+    padding: 0.4rem 0.72rem;
+    border: 1px solid rgba(250,245,255,0.22);
+    border-radius: 999px;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.32rem;
+    background: rgba(250,245,255,0.08);
+    color: rgba(250,245,255,0.95);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 500;
+    line-height: 1;
+    cursor: pointer;
+    transition: transform 0.25s ease, background 0.25s ease;
+  }
+  .music-player-minimize-icon {
+    font-size: 1rem;
+    line-height: 1;
+  }
+  .music-player-minimize-text {
+    line-height: 1;
+  }
+  .music-player-minimize:hover {
+    transform: translateY(-1px);
+    background: rgba(168,85,247,0.32);
   }
   .music-player-kicker {
     display: block;
@@ -1082,6 +1122,29 @@
   }
   .music-player-toggle.is-playing {
     background: radial-gradient(circle at 30% 30%, rgba(255,238,200,0.95), rgba(245,200,66,0.92) 56%, rgba(168,85,247,0.95) 100%);
+  }
+  .music-player-body {
+    opacity: 1;
+    max-height: 280px;
+    overflow: hidden;
+    transition: opacity 0.25s ease, max-height 0.4s ease, transform 0.35s ease;
+  }
+  .music-player.is-minimized .music-player-body {
+    opacity: 0;
+    max-height: 0;
+    transform: translateX(-12px);
+    pointer-events: none;
+  }
+  .music-player.is-minimized .music-player-header {
+    margin-bottom: 0;
+    cursor: pointer;
+  }
+  .music-player.is-minimized .music-player-kicker {
+    display: none;
+  }
+  .music-player.is-minimized .music-player-title {
+    font-size: 0.98rem;
+    white-space: nowrap;
   }
   .music-player-status {
     display: flex;
@@ -1222,9 +1285,37 @@
   }
 
   /* ── RESPONSIVE ── */
+  @media (max-width: 1100px) {
+    nav { padding: 1.2rem 4%; }
+    .section { padding: 7rem 4%; }
+    .contact-section { padding: 5.5rem 4%; }
+    .media-lead-card { min-height: 440px; }
+  }
+
   @media (max-width: 900px) {
-    .nav-links { display: none; }
-    .nav-logo img { width: clamp(78px, 24vw, 108px); }
+    nav {
+      padding: 0.9rem 1rem;
+      flex-wrap: wrap;
+      row-gap: 0.7rem;
+    }
+    .nav-logo img { width: clamp(72px, 22vw, 104px); }
+    .nav-links {
+      display: flex;
+      width: 100%;
+      gap: 1rem;
+      overflow-x: auto;
+      white-space: nowrap;
+      padding-bottom: 0.2rem;
+      scrollbar-width: none;
+    }
+    .nav-links::-webkit-scrollbar { display: none; }
+    .nav-links a { font-size: 0.72rem; }
+    .nav-cta { padding: 0.45rem 1rem; }
+    .hero {
+      min-height: 100svh;
+      padding: 10.4rem 5% 4.5rem;
+    }
+    .hero-desc { margin-bottom: 2.2rem; }
     .about-grid { grid-template-columns: 1fr; gap: 3rem; }
     .media-showcase { grid-template-columns: 1fr; }
     .media-stack { grid-template-rows: auto; }
@@ -1233,22 +1324,24 @@
     .service-card.featured { grid-column: 1; grid-template-columns: 1fr; gap: 1.5rem; }
     .reviews-carousel { grid-template-columns: 1fr; }
     .contact-grid { grid-template-columns: 1fr; }
+    .baroque-map-embed { height: 360px; }
     footer { grid-template-columns: 1fr; justify-items: center; text-align: center; }
     .footer-logo { justify-self: center; }
-    .footer-links { justify-content: center; }
+    .footer-links { justify-content: center; flex-wrap: wrap; }
     .footer-copy { justify-self: center; text-align: center; }
     .site-credit { margin: 0.2rem auto 1.5rem; font-size: 0.68rem; }
     .music-player {
       left: 0.75rem;
       bottom: 0.75rem;
-      width: min(280px, calc(100vw - 1.5rem));
+      width: min(296px, calc(100vw - 1.5rem));
       padding: 0.9rem 0.9rem 0.85rem;
     }
+    .music-player.is-minimized { transform: translateX(calc(-100% + 92px)); }
     .music-player-title { font-size: 1.05rem; }
     .music-player-toggle { width: 48px; height: 48px; }
     .whatsapp-float {
       left: 0.75rem;
-      bottom: 12.3rem;
+      bottom: 12.4rem;
       width: 50px;
       height: 50px;
       padding: 3px;
@@ -1259,6 +1352,69 @@
     }
     .floating-tools { right: 0.75rem; bottom: 0.75rem; }
     .floating-tool { min-width: 126px; padding: 0.72rem 0.9rem; font-size: 0.7rem; }
+  }
+
+  @media (max-width: 640px) {
+    .hero {
+      min-height: 100svh;
+      padding: 10rem 1rem 4rem;
+    }
+    .section { padding: 5rem 1rem; }
+    .contact-section { padding: 4.8rem 1rem; }
+    .services-header { margin-bottom: 2.2rem; }
+    .service-card { padding: 1.5rem 1.2rem; }
+    .service-name { font-size: 1.2rem; }
+    .review-card { padding: 1.3rem; }
+    .contact-link {
+      width: 100%;
+      justify-content: center;
+    }
+    .contact-panel { padding: 1.2rem; }
+    .contact-form-title { font-size: 1.45rem; }
+    .baroque-map-embed { height: 300px; }
+    .floating-tools {
+      right: 0.55rem;
+      bottom: calc(0.55rem + env(safe-area-inset-bottom));
+      gap: 0.5rem;
+    }
+    .floating-tool { min-width: 116px; padding: 0.65rem 0.75rem; font-size: 0.63rem; }
+    .music-player {
+      left: 0.55rem;
+      bottom: calc(0.55rem + env(safe-area-inset-bottom));
+      width: min(272px, calc(100vw - 1.1rem));
+      border-radius: 20px;
+    }
+    .music-player-title { font-size: 0.98rem; }
+    .music-player-kicker { font-size: 0.58rem; letter-spacing: 0.18em; }
+    .music-player-toggle { width: 44px; height: 44px; }
+    .music-player-minimize { min-height: 34px; padding: 0.38rem 0.6rem; font-size: 0.62rem; }
+    .music-player-minimize-icon { font-size: 0.92rem; }
+    .music-player.is-minimized { transform: translateX(calc(-100% + 88px)); }
+    .whatsapp-float {
+      width: 46px;
+      height: 46px;
+      left: 0.55rem;
+      bottom: calc(11.4rem + env(safe-area-inset-bottom));
+    }
+  }
+
+  @media (max-width: 430px) {
+    .hero-title { font-size: clamp(2.6rem, 14vw, 3.8rem); }
+    .hero-subtitle-italic { font-size: 1rem; }
+    .hero-desc { font-size: 0.95rem; line-height: 1.6; }
+    .hero-actions { width: 100%; }
+    .btn-primary,
+    .btn-ghost {
+      display: inline-flex;
+      justify-content: center;
+      width: 100%;
+    }
+    .baroque-map-embed { height: 250px; }
+    .site-credit { font-size: 0.6rem; letter-spacing: 0.08em; }
+  }
+
+  @media (max-height: 740px) {
+    .hero-scroll-hint { display: none; }
   }
 
   /* ── BAROQUE PATTERN OVERLAY ── */
@@ -1323,10 +1479,11 @@
     z-index: 10;
     box-shadow: inset 0 0 30px rgba(26,10,46,0.5);
   }
-  #baroque-map {
+  .baroque-map-embed {
     height: 460px;
     width: 100%;
-    filter: saturate(0.7) hue-rotate(200deg) brightness(0.75);
+    border: 0;
+    display: block;
   }
   .map-pin-label {
     margin-top: 1rem;
@@ -1581,23 +1738,31 @@
   </div>
 </div>
 <div id="google_translate_element" aria-hidden="true"></div>
-<div class="music-player" aria-label="Reproductor de Baroque">
+<div class="music-player" id="musicPlayer" aria-label="Reproductor de Baroque">
   <div class="music-player-header">
     <div>
       <span class="music-player-kicker">Baroque Session</span>
       <strong class="music-player-title">Nuestra canción</strong>
     </div>
-    <button type="button" class="music-player-toggle" id="musicToggle" aria-label="Reproducir canción">▶</button>
+    <div class="music-player-actions">
+      <button type="button" class="music-player-minimize" id="musicMinimize" aria-label="Ocultar reproductor" aria-expanded="true" title="Ocultar reproductor">
+        <span class="music-player-minimize-icon" id="musicMinimizeIcon" aria-hidden="true">‹</span>
+        <span class="music-player-minimize-text" id="musicMinimizeText">Ocultar</span>
+      </button>
+      <button type="button" class="music-player-toggle" id="musicToggle" aria-label="Reproducir canción">▶</button>
+    </div>
   </div>
-  <div class="music-player-bar">
-    <span class="music-player-progress" id="musicProgress"></span>
-    <input type="range" class="music-player-seek" id="musicSeek" min="0" max="1000" value="0" aria-label="Avanzar o retroceder canción">
+  <div class="music-player-body">
+    <div class="music-player-bar">
+      <span class="music-player-progress" id="musicProgress"></span>
+      <input type="range" class="music-player-seek" id="musicSeek" min="0" max="1000" value="0" aria-label="Avanzar o retroceder canción">
+    </div>
+    <div class="music-player-status">
+      <span id="musicState">Pulsa para escuchar</span>
+      <span id="musicTime">0:00</span>
+    </div>
+    <p class="music-player-note">Reproduce el tema desde aquí sin salir de la portada.</p>
   </div>
-  <div class="music-player-status">
-    <span id="musicState">Pulsa para escuchar</span>
-    <span id="musicTime">0:00</span>
-  </div>
-  <p class="music-player-note">Reproduce el tema desde aquí sin salir de la portada.</p>
   <audio id="baroqueAudio" preload="metadata">
     <source src="baroque-cancion.mpeg" type="audio/mpeg">
   </audio>
@@ -1978,7 +2143,13 @@
     <div class="contact-grid reveal reveal-delay-3">
       <div class="contact-panel">
         <div class="map-container" style="margin-top:0;">
-          <div id="baroque-map"></div>
+          <iframe
+            class="baroque-map-embed"
+            title="Mapa de Baroque Disco Pub en Gijón"
+            loading="lazy"
+            allowfullscreen
+            referrerpolicy="no-referrer-when-downgrade"
+            src="https://www.google.com/maps?q=Rodr%C3%ADguez+San+Pedro+43,+C.+Marqu%C3%A9s+de+San+Esteban,+50,+33206+Gij%C3%B3n,+Asturias&amp;z=17&amp;output=embed"></iframe>
         </div>
         <p class="map-pin-label">Nuestra ubicación</p>
         <p class="map-address">Rodríguez San Pedro 43, C. Marqués de San Esteban, 50 · 33206 Gijón, Asturias</p>
@@ -2024,9 +2195,8 @@
   </ul>
   <span class="footer-copy">© 2026 Baroque Disco Pub. Todos los derechos reservados.</span>
 </footer>
-<p class="site-credit">Desarrollada por LuckyBase</p>
+<p class="site-credit">Desarrollada por <a href="Https://luckybase.es" target="_blank">LuckyBase</p>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
   function googleTranslateElementInit() {
     if (!window.google || !window.google.translate) return;
@@ -2061,12 +2231,35 @@
   const clickBurstLayer = document.getElementById('clickBurstLayer');
   const promoOverlay = document.getElementById('promoOverlay');
   const promoClose = document.getElementById('promoClose');
+  const musicPlayer = document.getElementById('musicPlayer');
+  const musicMinimize = document.getElementById('musicMinimize');
+  const musicMinimizeIcon = document.getElementById('musicMinimizeIcon');
+  const musicMinimizeText = document.getElementById('musicMinimizeText');
   const baroqueAudio = document.getElementById('baroqueAudio');
   const musicToggle = document.getElementById('musicToggle');
   const musicProgress = document.getElementById('musicProgress');
   const musicSeek = document.getElementById('musicSeek');
   const musicState = document.getElementById('musicState');
   const musicTime = document.getElementById('musicTime');
+  const promoSessionKey = 'baroquePromoDismissed';
+  const minimizedSessionKey = 'baroqueMusicMinimized';
+
+  function readSessionFlag(key) {
+    try {
+      return window.sessionStorage.getItem(key) === '1';
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function writeSessionFlag(key, value) {
+    try {
+      window.sessionStorage.setItem(key, value ? '1' : '0');
+    } catch (error) {
+      // Ignore browsers that block storage in private/strict modes.
+    }
+  }
+
   document.addEventListener('mousemove', e => {
     glow.style.left = e.clientX + 'px';
     glow.style.top = e.clientY + 'px';
@@ -2097,6 +2290,32 @@
       musicToggle.setAttribute('aria-label', 'Pausar canción');
       musicState.textContent = 'Reproduciendo';
     }
+  }
+
+  function setMusicPlayerMinimized(isMinimized) {
+    if (!musicPlayer || !musicMinimize) return;
+    musicPlayer.classList.toggle('is-minimized', isMinimized);
+    if (musicMinimizeIcon) musicMinimizeIcon.textContent = isMinimized ? '›' : '‹';
+    if (musicMinimizeText) musicMinimizeText.textContent = isMinimized ? 'Abrir' : 'Ocultar';
+    musicMinimize.setAttribute('aria-label', isMinimized ? 'Abrir reproductor' : 'Ocultar reproductor');
+    musicMinimize.setAttribute('title', isMinimized ? 'Abrir reproductor' : 'Ocultar reproductor');
+    musicMinimize.setAttribute('aria-expanded', isMinimized ? 'false' : 'true');
+    writeSessionFlag(minimizedSessionKey, isMinimized);
+  }
+
+  if (musicPlayer && musicMinimize) {
+    setMusicPlayerMinimized(readSessionFlag(minimizedSessionKey));
+    musicMinimize.addEventListener('click', () => {
+      const shouldMinimize = !musicPlayer.classList.contains('is-minimized');
+      setMusicPlayerMinimized(shouldMinimize);
+    });
+    musicPlayer.addEventListener('click', event => {
+      const clickedControl = event.target.closest('#musicMinimize, #musicToggle');
+      if (clickedControl) return;
+      if (musicPlayer.classList.contains('is-minimized')) {
+        setMusicPlayerMinimized(false);
+      }
+    });
   }
 
   if (baroqueAudio && musicToggle && musicSeek) {
@@ -2134,17 +2353,25 @@
     syncMusicPlayer();
   }
 
-  function closePromoOverlay() {
+  function closePromoOverlay(rememberDismissal = true) {
     if (!promoOverlay) return;
+    const isVisible = promoOverlay.classList.contains('is-visible');
     promoOverlay.classList.remove('is-visible');
     promoOverlay.setAttribute('aria-hidden', 'true');
+    if (rememberDismissal && isVisible) {
+      writeSessionFlag(promoSessionKey, true);
+    }
   }
 
   if (promoOverlay) {
-    window.setTimeout(() => {
-      promoOverlay.classList.add('is-visible');
-      promoOverlay.setAttribute('aria-hidden', 'false');
-    }, 180);
+    if (!readSessionFlag(promoSessionKey)) {
+      window.setTimeout(() => {
+        promoOverlay.classList.add('is-visible');
+        promoOverlay.setAttribute('aria-hidden', 'false');
+      }, 180);
+    } else {
+      closePromoOverlay(false);
+    }
 
     promoOverlay.addEventListener('click', e => {
       if (e.target === promoOverlay) closePromoOverlay();
@@ -2214,55 +2441,6 @@
       nav.style.background = 'rgba(26,10,46,0.6)';
     }
   });
-
-  // Leaflet Map — Baroque Disco Pub, Gijón
-  // Coordinates pending review for Rodríguez San Pedro 43 / C. Marqués de San Esteban, 50, Gijón
-  const mapCoords = [43.5270, -5.6720];
-  const map = L.map('baroque-map', {
-    center: mapCoords,
-    zoom: 16,
-    scrollWheelZoom: false,
-    zoomControl: true,
-  });
-
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors',
-    maxZoom: 19,
-  }).addTo(map);
-
-  // Custom purple marker
-  const markerIcon = L.divIcon({
-    className: '',
-    html: `<div style="
-      width:36px;height:36px;
-      background:linear-gradient(135deg,#7c3aed,#a855f7);
-      border-radius:50% 50% 50% 0;
-      transform:rotate(-45deg);
-      box-shadow:0 0 20px rgba(168,85,247,0.8),0 0 40px rgba(124,58,237,0.4);
-      border:2px solid rgba(255,255,255,0.4);
-    "></div>
-    <div style="
-      position:absolute;top:50%;left:50%;
-      transform:translate(-50%,-60%) rotate(0deg);
-      font-size:14px;
-      filter:drop-shadow(0 0 4px #fff);
-    ">♪</div>`,
-    iconSize: [36, 36],
-    iconAnchor: [18, 36],
-    popupAnchor: [0, -40],
-  });
-
-  const marker = L.marker(mapCoords, { icon: markerIcon }).addTo(map);
-  marker.bindPopup(`
-    <div style="font-family:'DM Sans',sans-serif;text-align:center;padding:4px 8px;">
-      <strong class="notranslate" translate="no" style="font-family:'Playfair Display',serif;font-size:1rem;color:#7c3aed;">Baroque Disco Pub</strong><br/>
-      <span style="font-size:0.78rem;color:#555;">Rodríguez San Pedro 43, C. Marqués de San Esteban, 50<br/>33206 Gijón, Asturias</span>
-    </div>
-  `).openPopup();
-
-  // Enable scroll wheel zoom on click
-  map.on('click', () => map.scrollWheelZoom.enable());
-  map.on('mouseout', () => map.scrollWheelZoom.disable());
 
   const langToggle = document.getElementById('langToggle');
   if (langToggle) {
