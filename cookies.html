@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="google" content="notranslate">
 <title>Pol&iacute;tica de Cookies - Baroque Disco Pub</title>
 <link rel="icon" type="image/png" href="baorque3dd.png">
@@ -99,6 +99,55 @@
     .floating-tools { right: 0.5rem; gap: 0.45rem; }
     .floating-tool { min-width: 104px; padding: 0.58rem 0.66rem; font-size: 0.58rem; }
     .site-credit { font-size: 0.58rem; }
+  }
+
+  html { -webkit-text-size-adjust: 100%; }
+  .nav-logo { display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; }
+  img, video { max-width: 100%; }
+  :where(main, section, article, aside, footer, .card, .meta-box, .note-box, .timeline-item, .panel) { min-width: 0; }
+  @media (max-width: 900px) {
+    nav {
+      padding-top: max(0.88rem, calc(env(safe-area-inset-top) + 0.42rem));
+      padding-left: max(0.95rem, calc(env(safe-area-inset-left) + 0.5rem));
+      padding-right: max(0.95rem, calc(env(safe-area-inset-right) + 0.5rem));
+    }
+    .nav-back {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+    }
+    main {
+      width: min(1120px, calc(100% - 0.95rem));
+      padding-bottom: calc(7.2rem + env(safe-area-inset-bottom));
+    }
+    .floating-tool { min-height: 42px; }
+  }
+  @media (max-width: 620px) {
+    nav {
+      display: grid;
+      grid-template-columns: 1fr;
+      justify-items: stretch;
+      gap: 0.62rem;
+    }
+    .nav-logo { justify-self: center; }
+    .nav-back { width: 100%; }
+    .floating-tools {
+      left: 50%;
+      right: auto;
+      transform: translateX(-50%);
+      flex-direction: row;
+      width: calc(100% - 1rem);
+      max-width: 340px;
+      gap: 0.5rem;
+    }
+    .floating-tool {
+      flex: 1 1 0;
+      min-width: 0;
+      padding-inline: 0.72rem;
+      letter-spacing: 0.08em;
+    }
+    .site-credit { margin-bottom: calc(5rem + env(safe-area-inset-bottom)); }
   }
 </style>
 </head>
